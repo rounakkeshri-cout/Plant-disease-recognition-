@@ -51,8 +51,7 @@ Plant-disease-recognition/
 
 Due to GitHub file size limits, the trained model is hosted on Google Drive:
 
-👉 [Download Model]([PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE](https://drive.google.com/file/d/17RYb9qEN6FiNQ120VYvDwSmyKWkioM0Y/view?usp=drive_link)
-)
+👉 [Download Model]([PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE](https://drive.google.com/file/d/17RYb9qEN6FiNQ120VYvDwSmyKWkioM0Y/view?usp=drive_link))
 
 ---
 

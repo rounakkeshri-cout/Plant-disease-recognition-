@@ -51,7 +51,7 @@ Plant-disease-recognition/
 
 Due to GitHub file size limits, the trained model is hosted on Google Drive:
 
-👉 [Download Model]([PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE](https://drive.google.com/file/d/17RYb9qEN6FiNQ120VYvDwSmyKWkioM0Y/view?usp=drive_link)<img width="1236" height="705" alt="Screenshot 2026-04-25 at 6 14 14 PM" src="https://github.com/user-attachments/assets/71cd112f-30d4-44ec-bb9b-b1f05f025544" />
+👉 [Download Model]([PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE](https://drive.google.com/file/d/17RYb9qEN6FiNQ120VYvDwSmyKWkioM0Y/view?usp=drive_link)
 )
 
 ---
@@ -81,7 +81,7 @@ streamlit run main.py
 
 ## 📸 Screenshots
 
-(Add your project screenshots here)
+<img width="1236" height="705" alt="Screenshot 2026-04-25 at 6 14 14 PM" src="https://github.com/user-attachments/assets/71cd112f-30d4-44ec-bb9b-b1f05f025544" />
 
 ---
 

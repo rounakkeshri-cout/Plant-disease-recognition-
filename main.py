@@ -5,6 +5,20 @@ import numpy as np
 st.set_page_config(page_title="Plant Disease Detection", layout="wide")
 
 model = tf.keras.models.load_model("trained_model.h5")
+# ---------------- LEAF DETECTOR (runs BEFORE disease model) ----------------
+leaf_detector = tf.keras.models.load_model("leaf_detector.h5")
+
+def is_leaf(uploaded_file, threshold=0.5):
+    from PIL import Image
+    uploaded_file.seek(0)
+    image = Image.open(uploaded_file).convert("RGB")
+    image = image.resize((224, 224))
+    input_arr = np.array(image).astype("float32")
+    input_arr = np.expand_dims(input_arr, axis=0)
+    input_arr = tf.keras.applications.efficientnet_v2.preprocess_input(input_arr)
+    not_leaf_probability = leaf_detector.predict(input_arr, verbose=0)[0][0]
+    uploaded_file.seek(0)
+    return not_leaf_probability < threshold
 disease_info = {
 
 # ---------------- APPLE ----------------
@@ -772,52 +786,56 @@ elif(app_mode=="Disease Recognition"):
 
             with st.spinner("Analyzing..."):
 
-                result_index, confidence = model_prediction(test_image)
+                if not is_leaf(test_image):
+                    st.error("🚫 No plant leaf detected. Please upload or capture a clear plant leaf image.")
+                else:
+                    result_index, confidence = model_prediction(test_image)
 
-                class_name = ['Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
-                'Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew','Cherry_(including_sour)___healthy',
-                'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot','Corn_(maize)___Common_rust_',
-                'Corn_(maize)___Northern_Leaf_Blight','Corn_(maize)___healthy',
-                'Grape___Black_rot','Grape___Esca_(Black_Measles)','Grape___Leaf_blight_(Isariopsis_Leaf_Spot)','Grape___healthy',
-                'Orange___Haunglongbing_(Citrus_greening)','Peach___Bacterial_spot','Peach___healthy',
-                'Pepper,_bell___Bacterial_spot','Pepper,_bell___healthy',
-                'Potato___Early_blight','Potato___Late_blight','Potato___healthy',
-                'Raspberry___healthy','Soybean___healthy','Squash___Powdery_mildew',
-                'Strawberry___Leaf_scorch','Strawberry___healthy',
-                'Tomato___Bacterial_spot','Tomato___Early_blight','Tomato___Late_blight',
-                'Tomato___Leaf_Mold','Tomato___Septoria_leaf_spot',
-                'Tomato___Spider_mites Two-spotted_spider_mite','Tomato___Target_Spot',
-                'Tomato___Tomato_Yellow_Leaf_Curl_Virus','Tomato___Tomato_mosaic_virus','Tomato___healthy']
+                    class_name = ['Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
+                    'Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew','Cherry_(including_sour)___healthy',
+                    'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot','Corn_(maize)___Common_rust_',
+                    'Corn_(maize)___Northern_Leaf_Blight','Corn_(maize)___healthy',
+                    'Grape___Black_rot','Grape___Esca_(Black_Measles)','Grape___Leaf_blight_(Isariopsis_Leaf_Spot)','Grape___healthy',
+                    'Orange___Haunglongbing_(Citrus_greening)','Peach___Bacterial_spot','Peach___healthy',
+                    'Pepper,_bell___Bacterial_spot','Pepper,_bell___healthy',
+                    'Potato___Early_blight','Potato___Late_blight','Potato___healthy',
+                    'Raspberry___healthy','Soybean___healthy','Squash___Powdery_mildew',
+                    'Strawberry___Leaf_scorch','Strawberry___healthy',
+                    'Tomato___Bacterial_spot','Tomato___Early_blight','Tomato___Late_blight',
+                    'Tomato___Leaf_Mold','Tomato___Septoria_leaf_spot',
+                    'Tomato___Spider_mites Two-spotted_spider_mite','Tomato___Target_Spot',
+                    'Tomato___Tomato_Yellow_Leaf_Curl_Virus','Tomato___Tomato_mosaic_virus','Tomato___healthy']
 
+                    st.markdown(f"""
+                    <div style="
+                    margin-top: 35px;
+                    padding: 35px;
+                    border-radius: 22px;
+                    background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.06));
+                    border: 2px solid rgba(34,197,94,0.4);
+                    box-shadow: 0px 20px 60px rgba(34,197,94,0.25), inset 0px 1px 0px rgba(255,255,255,0.1);
+                    backdrop-filter: blur(15px);
+                    animation: slideUp 0.5s ease-out;
+                    ">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 6px; height: 32px; background: linear-gradient(180deg, #22c55e, #10b981); border-radius: 10px; box-shadow: 0px 0px 15px #22c55e;"></div>
+                        <h3 style="color:#22c55e; margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">✓ PREDICTION RESULT</h3>
+                    </div>
+                    <p style="color:white; font-size: 26px; font-weight: 700; margin: 16px 0 0 0; letter-spacing: 0.3px;">
+                    {class_name[result_index]}
+                    </p>
+                    </div>
+                    <style>
+                    @keyframes slideUp {{
+                        from {{ opacity: 0; transform: translateY(20px); }}
+                        to {{ opacity: 1; transform: translateY(0); }}
+                    }}
+                    </style>
+                    """, unsafe_allow_html=True)
 
-                st.markdown(f"""
-                <div style="
-                margin-top: 35px;
-                padding: 35px;
-                border-radius: 22px;
-                background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.06));
-                border: 2px solid rgba(34,197,94,0.4);
-                box-shadow: 0px 20px 60px rgba(34,197,94,0.25), inset 0px 1px 0px rgba(255,255,255,0.1);
-                backdrop-filter: blur(15px);
-                animation: slideUp 0.5s ease-out;
-                ">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                    <div style="width: 6px; height: 32px; background: linear-gradient(180deg, #22c55e, #10b981); border-radius: 10px; box-shadow: 0px 0px 15px #22c55e;"></div>
-                    <h3 style="color:#22c55e; margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px;">✓ PREDICTION RESULT</h3>
-                </div>
-                <p style="color:white; font-size: 26px; font-weight: 700; margin: 16px 0 0 0; letter-spacing: 0.3px;">
-                {class_name[result_index]}
-                </p>
-                </div>
-                <style>
-                @keyframes slideUp {{
-                    from {{ opacity: 0; transform: translateY(20px); }}
-                    to {{ opacity: 1; transform: translateY(0); }}
-                }}
-                </style>
-                """, unsafe_allow_html=True)
-                predicted_label = class_name[result_index].strip()
-                st.markdown(f"""
+                    predicted_label = class_name[result_index].strip()
+
+                    st.markdown(f"""
 <div style="
 margin-top: 20px;
 padding: 28px;
@@ -839,12 +857,11 @@ backdrop-filter: blur(15px);
 </div>
 """, unsafe_allow_html=True)
 
-                # Display disease information
-                if predicted_label in disease_info:
-                    disease_data = disease_info[predicted_label]
-                    disease_type = disease_data['type']
-                    
-                    st.markdown(f"""
+                    if predicted_label in disease_info:
+                        disease_data = disease_info[predicted_label]
+                        disease_type = disease_data['type']
+
+                        st.markdown(f"""
 <div style="
 margin-top: 30px;
 padding: 35px;

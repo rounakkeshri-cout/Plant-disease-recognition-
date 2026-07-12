@@ -1,6 +1,7 @@
 import streamlit as st
 import tensorflow as tf
 import numpy as np
+from gradcam_utils import make_gradcam_heatmap, overlay_heatmap
 
 st.set_page_config(page_title="Plant Disease Detection", layout="wide")
 
@@ -248,7 +249,9 @@ def model_prediction(test_image):
     input_arr = np.array([input_arr])
     prediction = model.predict(input_arr)
     confidence = np.max(prediction) * 100
-    return np.argmax(prediction), confidence
+    # NEW: also return the exact input tensor + resized PIL image used for
+    # this prediction, so Grad-CAM can reuse the identical input the model saw.
+    return np.argmax(prediction), confidence, input_arr, image
 
 # ---------------- PREMIUM CSS WITH GLASS MORPHISM ----------------
 st.markdown("""
@@ -789,7 +792,7 @@ elif(app_mode=="Disease Recognition"):
                 if not is_leaf(test_image):
                     st.error("🚫 No plant leaf detected. Please upload or capture a clear plant leaf image.")
                 else:
-                    result_index, confidence = model_prediction(test_image)
+                    result_index, confidence, gradcam_input, gradcam_image = model_prediction(test_image)
 
                     class_name = ['Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy',
                     'Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew','Cherry_(including_sour)___healthy',
@@ -856,6 +859,24 @@ backdrop-filter: blur(15px);
 </div>
 </div>
 """, unsafe_allow_html=True)
+
+                    # ---------------- GRAD-CAM ----------------
+                    with st.expander("🔍 Why this prediction? (Grad-CAM)"):
+                        st.caption(
+                            "Highlighted (red/yellow) regions are the parts of the leaf "
+                            "that most strongly influenced the model's prediction."
+                        )
+                        with st.spinner("Generating Grad-CAM heatmap..."):
+                            heatmap, _, _ = make_gradcam_heatmap(
+                                gradcam_input, model, pred_index=result_index
+                            )
+                            display_image = gradcam_image.resize((300, 300))
+                            overlay = overlay_heatmap(display_image, heatmap, alpha=0.45)
+                        st.image(
+                            overlay,
+                            caption=f"Grad-CAM heatmap for '{class_name[result_index]}'",
+                            use_container_width=True,
+                        )
 
                     if predicted_label in disease_info:
                         disease_data = disease_info[predicted_label]
